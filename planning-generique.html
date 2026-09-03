@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mon planning — UBS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ical.js/1.5.0/ical.min.js"></script>
+<style>
+  :root{
+    --bg: #EEF1F6;
+    --surface: #FFFFFF;
+    --ink: #16233B;
+    --ink-soft: #56607A;
+    --line: #D8DEEA;
+    --accent: #1F7A6C;
+    --accent-soft: #E4F1EE;
+    --today: #C65D2E;
+    --today-soft: #FBEAE1;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'IBM Plex Sans', sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .shell{
+    max-width:760px;
+    margin:0 auto;
+    padding:40px 20px 80px;
+  }
+  header{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap:16px;
+    margin-bottom:28px;
+    flex-wrap:wrap;
+  }
+  h1{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:2rem;
+    margin:0;
+    letter-spacing:-0.01em;
+  }
+  .subtitle{
+    color:var(--ink-soft);
+    font-size:0.9rem;
+    margin-top:4px;
+  }
+  .controls{
+    display:flex;
+    gap:8px;
+    margin-bottom:24px;
+    flex-wrap:wrap;
+  }
+  input[type=text]{
+    flex:1;
+    min-width:220px;
+    padding:10px 12px;
+    border:1px solid var(--line);
+    border-radius:6px;
+    font-family:'IBM Plex Sans', sans-serif;
+    font-size:0.85rem;
+    color:var(--ink);
+    background:var(--surface);
+  }
+  button{
+    padding:10px 16px;
+    border:none;
+    border-radius:6px;
+    background:var(--accent);
+    color:#fff;
+    font-family:'IBM Plex Sans', sans-serif;
+    font-weight:500;
+    font-size:0.85rem;
+    cursor:pointer;
+  }
+  button:hover{ opacity:0.9; }
+  button.secondary{
+    background:var(--surface);
+    color:var(--ink);
+    border:1px solid var(--line);
+  }
+  #status{
+    color:var(--ink-soft);
+    font-size:0.85rem;
+    margin-bottom:20px;
+    min-height:1.2em;
+  }
+  #status.error{ color:var(--today); }
+  .day-block{
+    display:grid;
+    grid-template-columns:64px 1fr;
+    gap:16px;
+    padding:20px 0;
+    border-top:1px solid var(--line);
+  }
+  .day-block:last-child{ border-bottom:1px solid var(--line); }
+  .day-label{
+    text-align:center;
+  }
+  .day-num{
+    font-family:'Fraunces', serif;
+    font-size:1.9rem;
+    font-weight:600;
+    line-height:1;
+  }
+  .day-name{
+    font-size:0.7rem;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    color:var(--ink-soft);
+    margin-top:2px;
+  }
+  .day-block.today .day-num{ color:var(--today); }
+  .day-block.today .day-name{ color:var(--today); }
+  .events{
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+  }
+  .event{
+    padding:10px 14px;
+    border-left:3px solid var(--accent);
+    background:var(--accent-soft);
+    border-radius:0 6px 6px 0;
+  }
+  .day-block.today .event{
+    border-left-color:var(--today);
+    background:var(--today-soft);
+  }
+  .event-time{
+    font-size:0.75rem;
+    color:var(--ink-soft);
+    font-weight:500;
+  }
+  .event-title{
+    font-weight:600;
+    margin:2px 0;
+  }
+  .event-meta{
+    font-size:0.8rem;
+    color:var(--ink-soft);
+  }
+  .empty, .loading{
+    color:var(--ink-soft);
+    font-size:0.9rem;
+    padding:20px 0;
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+  <header>
+    <div>
+      <h1>Mon planning</h1>
+      <div class="subtitle">Université Bretagne Sud</div>
+    </div>
+  </header>
+
+  <div class="controls">
+    <input type="text" id="icsUrl" placeholder="Colle ici ton lien ICS du planning UBS (anonymous_cal.jsp?data=...)">
+    <button id="loadBtn">Charger</button>
+    <button id="clearBtn" class="secondary" title="Oublier le lien enregistré">Oublier</button>
+  </div>
+
+  <details style="margin-bottom:20px;">
+    <summary style="cursor:pointer; color:var(--ink-soft); font-size:0.85rem;">Proxy personnel (optionnel, recommandé)</summary>
+    <div style="margin-top:10px;">
+      <input type="text" id="customProxy" value="https://wispy-flower-3683.briac8151.workers.dev/?url=" style="width:100%;">
+      <div style="font-size:0.78rem; color:var(--ink-soft); margin-top:6px;">
+        Si rempli, cette base est essayée en premier (le lien ICS encodé est ajouté juste après). Sinon, la page retombe sur des proxys publics, moins fiables sur la durée.
+      </div>
+    </div>
+  </details>
+
+  <div style="font-size:0.78rem; color:var(--ink-soft); margin-bottom:20px;">
+    Le lien et le proxy sont enregistrés dans ce navigateur (stockage local) : ils resteront pré-remplis même après fermeture de l'onglet ou rechargement.
+  </div>
+
+  <div id="status"></div>
+  <div id="agenda"></div>
+</div>
+
+<script>
+const statusEl = document.getElementById('status');
+const agendaEl = document.getElementById('agenda');
+const urlInput = document.getElementById('icsUrl');
+
+const DAY_NAMES = ['dim','lun','mar','mer','jeu','ven','sam'];
+const MONTH_NAMES = ['janv.','févr.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'];
+
+function setStatus(msg, isError=false){
+  statusEl.textContent = msg;
+  statusEl.className = isError ? 'error' : '';
+}
+
+// Chaîne de repli : proxy personnel (si renseigné) → accès direct → proxys publics.
+function buildTargets(url, customProxyBase){
+  const enc = encodeURIComponent(url);
+  const targets = [];
+  if(customProxyBase){
+    targets.push({ label: 'proxy personnel', target: customProxyBase + enc });
+  }
+  targets.push({ label: 'accès direct', target: url });
+  targets.push({ label: 'proxy allorigins', target: 'https://api.allorigins.win/raw?url=' + enc });
+  targets.push({ label: 'proxy codetabs', target: 'https://api.codetabs.com/v1/proxy?quest=' + enc });
+  targets.push({ label: 'proxy corsproxy.io', target: 'https://corsproxy.io/?url=' + enc });
+  return targets;
+}
+
+async function fetchICS(url, customProxyBase, onAttempt){
+  const targets = buildTargets(url, customProxyBase);
+  let lastError = null;
+
+  for(const { label, target } of targets){
+    try{
+      onAttempt(label);
+      const res = await fetch(target, { cache: 'no-store' });
+      if(!res.ok) throw new Error('HTTP ' + res.status);
+      const text = await res.text();
+      if(!text.includes('BEGIN:VCALENDAR')) throw new Error('réponse inattendue (pas un ICS)');
+      return text;
+    } catch(err){
+      lastError = err;
+      // on essaie la cible suivante
+    }
+  }
+  throw lastError || new Error('toutes les tentatives ont échoué');
+}
+
+function expandEvents(icsText, rangeStart, rangeEnd){
+  const jcalData = ICAL.parse(icsText);
+  const comp = new ICAL.Component(jcalData);
+  const vevents = comp.getAllSubcomponents('vevent');
+  const results = [];
+
+  vevents.forEach(vevent => {
+    const event = new ICAL.Event(vevent);
+    const summary = event.summary || 'Sans titre';
+    const location = event.location || '';
+    const description = event.description || '';
+
+    if(event.isRecurring()){
+      const iterator = event.iterator();
+      let next;
+      while((next = iterator.next())){
+        const occStart = next.toJSDate();
+        if(occStart > rangeEnd) break;
+        if(occStart < rangeStart) continue;
+        const details = event.getOccurrenceDetails(next);
+        results.push({
+          start: details.startDate.toJSDate(),
+          end: details.endDate.toJSDate(),
+          summary, location, description
+        });
+      }
+    } else {
+      const occStart = event.startDate.toJSDate();
+      const occEnd = event.endDate.toJSDate();
+      if(occStart <= rangeEnd && occEnd >= rangeStart){
+        results.push({ start: occStart, end: occEnd, summary, location, description });
+      }
+    }
+  });
+
+  results.sort((a,b) => a.start - b.start);
+  return results;
+}
+
+function sameDay(a,b){
+  return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate();
+}
+
+function formatTime(d){
+  return d.toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'});
+}
+
+function render(events){
+  agendaEl.innerHTML = '';
+  if(events.length === 0){
+    agendaEl.innerHTML = '<div class="empty">Aucun événement dans la période affichée.</div>';
+    return;
+  }
+
+  const today = new Date();
+  let currentDay = null;
+  let dayBlock = null;
+  let eventsWrap = null;
+
+  events.forEach(ev => {
+    if(!currentDay || !sameDay(currentDay, ev.start)){
+      currentDay = ev.start;
+      dayBlock = document.createElement('div');
+      dayBlock.className = 'day-block' + (sameDay(currentDay, today) ? ' today' : '');
+
+      const label = document.createElement('div');
+      label.className = 'day-label';
+      label.innerHTML = `
+        <div class="day-num">${currentDay.getDate()}</div>
+        <div class="day-name">${DAY_NAMES[currentDay.getDay()]} ${MONTH_NAMES[currentDay.getMonth()]}</div>
+      `;
+
+      eventsWrap = document.createElement('div');
+      eventsWrap.className = 'events';
+
+      dayBlock.appendChild(label);
+      dayBlock.appendChild(eventsWrap);
+      agendaEl.appendChild(dayBlock);
+    }
+
+    const evEl = document.createElement('div');
+    evEl.className = 'event';
+    evEl.innerHTML = `
+      <div class="event-time">${formatTime(ev.start)} – ${formatTime(ev.end)}</div>
+      <div class="event-title">${ev.summary}</div>
+      ${ev.location ? `<div class="event-meta">${ev.location}</div>` : ''}
+    `;
+    eventsWrap.appendChild(evEl);
+  });
+}
+
+async function load(){
+  const url = urlInput.value.trim();
+  const customProxyBase = document.getElementById('customProxy').value.trim();
+  if(!url){ setStatus('Colle une URL ICS ci-dessus.', true); return; }
+
+  // Sauvegarde durable : reste après fermeture de l'onglet ou rechargement.
+  localStorage.setItem('planning_icsUrl', url);
+  localStorage.setItem('planning_customProxy', customProxyBase);
+
+  agendaEl.innerHTML = '<div class="loading">Chargement du planning…</div>';
+
+  const attempt = async () => fetchICS(url, customProxyBase, (label) => setStatus('Tentative : ' + label + '…'));
+
+  let icsText;
+  try{
+    icsText = await attempt();
+  } catch(firstErr){
+    // Échec transitoire possible (401, proxy surchargé...) : on retente une fois après une courte pause.
+    setStatus('Premier passage en échec, nouvelle tentative dans 2s…', true);
+    await new Promise(r => setTimeout(r, 2000));
+    try{
+      icsText = await attempt();
+    } catch(secondErr){
+      agendaEl.innerHTML = '';
+      setStatus('Échec de toutes les tentatives (' + secondErr.message + '). Configure un proxy personnel ci-dessus pour un accès fiable, ou clique sur "Charger" pour réessayer.', true);
+      return;
+    }
+  }
+
+  const now = new Date();
+  const rangeStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
+  const rangeEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 60);
+  const events = expandEvents(icsText, rangeStart, rangeEnd);
+  render(events);
+  setStatus(`${events.length} événement(s) affiché(s) (7 derniers jours → 60 prochains jours).`);
+}
+
+document.getElementById('loadBtn').addEventListener('click', load);
+
+document.getElementById('clearBtn').addEventListener('click', () => {
+  localStorage.removeItem('planning_icsUrl');
+  localStorage.removeItem('planning_customProxy');
+  urlInput.value = '';
+  document.getElementById('customProxy').value = '';
+  agendaEl.innerHTML = '';
+  setStatus('Lien oublié. Colle un nouveau lien ICS pour recharger.');
+});
+
+// Restauration du lien enregistré (localStorage), puis chargement automatique si présent.
+const savedUrl = localStorage.getItem('planning_icsUrl');
+const savedProxy = localStorage.getItem('planning_customProxy');
+if(savedUrl){
+  urlInput.value = savedUrl;
+  if(savedProxy) document.getElementById('customProxy').value = savedProxy;
+  load();
+} else {
+  setStatus('Colle ton lien ICS du planning UBS ci-dessus, puis clique sur "Charger". Il sera ensuite mémorisé automatiquement.');
+}
+</script>
+</body>
+</html>
