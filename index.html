@@ -370,7 +370,7 @@ async function load(){
   const rangeEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 60);
   const events = expandEvents(icsText, rangeStart, rangeEnd);
   render(events);
-  setStatus(`${events.length} événement(s) affiché(s) (7 derniers jours → 60 prochains jours).`);
+  setStatus(`${events.length} événement(s) affiché(s) (60 prochains jours).`);
 }
 
 document.getElementById('loadBtn').addEventListener('click', load);
