@@ -86,6 +86,30 @@
     color:var(--ink);
     border:1px solid var(--line);
   }
+  details{
+    margin-bottom:20px;
+  }
+  details summary{
+    cursor:pointer;
+    color:var(--ink-soft);
+    font-size:0.85rem;
+    font-weight:500;
+    padding:8px 0;
+    user-select:none;
+  }
+  details summary:hover{
+    color:var(--accent);
+  }
+  details > div{
+    margin-top:12px;
+    padding:12px;
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:6px;
+  }
+  #customProxy{
+    width:100%;
+  }
   #status{
     color:var(--ink-soft);
     font-size:0.85rem;
@@ -171,15 +195,16 @@
     <button id="loadBtn">Charger</button>
     <button id="clearBtn" class="secondary" title="Oublier le lien enregistré">Oublier</button>
   </div>
-  <details style="margin-bottom:20px;">
-    <div style="margin-top:10px;">
-      <input type="text" id="customProxy" value="https://wispy-flower-3683.briac8151.workers.dev/?url=" style="width:100%;">
+
+  <details>
+    <summary>⚙️ Paramètres avancés (proxy personnel)</summary>
+    <div>
+      <input type="text" id="customProxy" placeholder="Proxy personnel (optionnel)">
+      <div style="font-size:0.75rem; color:var(--ink-soft); margin-top:8px;">
+        Le lien et le proxy sont enregistrés dans ce navigateur (stockage local).
+      </div>
     </div>
   </details>
-
-  <div style="font-size:0.78rem; color:var(--ink-soft); margin-bottom:20px;">
-    Le lien et le proxy sont enregistrés dans ce navigateur (stockage local) : ils resteront pré-remplis même après fermeture de l'onglet ou rechargement.
-  </div>
 
   <div id="status"></div>
   <div id="agenda"></div>
