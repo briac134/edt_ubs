@@ -23,8 +23,6 @@ Ce lien est personnel : il donne accès en lecture à l'emploi du temps sans aut
 
 Le lien est alors sauvegardé localement (`localStorage`) et sera réutilisé automatiquement aux prochaines ouvertures, même après fermeture de l'onglet. Le bouton **Oublier** permet de l'effacer.
 
-Le champ **Proxy personnel** est pré-rempli et sert à contourner une restriction technique du serveur UBS (CORS) ; il n'a normalement pas besoin d'être modifié.
-
 ## Remarque
 
 Le lien iCal peut être régénéré côté ENT si besoin (nouvel export). Dans ce cas, il suffit de coller le nouveau lien dans la page pour remplacer l'ancien.
