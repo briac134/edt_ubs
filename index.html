@@ -366,7 +366,7 @@ async function load(){
   }
 
   const now = new Date();
-  const rangeStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
+  const rangeStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const rangeEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 60);
   const events = expandEvents(icsText, rangeStart, rangeEnd);
   render(events);
