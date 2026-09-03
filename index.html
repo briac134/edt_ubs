@@ -210,10 +210,6 @@ function buildTargets(url, customProxyBase){
   if(customProxyBase){
     targets.push({ label: 'proxy personnel', target: customProxyBase + enc });
   }
-  targets.push({ label: 'accès direct', target: url });
-  targets.push({ label: 'proxy allorigins', target: 'https://api.allorigins.win/raw?url=' + enc });
-  targets.push({ label: 'proxy codetabs', target: 'https://api.codetabs.com/v1/proxy?quest=' + enc });
-  targets.push({ label: 'proxy corsproxy.io', target: 'https://corsproxy.io/?url=' + enc });
   return targets;
 }
 
