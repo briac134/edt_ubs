@@ -28,3 +28,7 @@ On peut également ajouter des évènements personnalisés en cliquant sur la se
 ## Remarque
 
 Le lien iCal peut être régénéré côté ENT si besoin (nouvel export). Dans ce cas, il suffit de coller le nouveau lien dans la page pour remplacer l'ancien.
+
+## Crédits
+
+Codé par Claude et Github Copilot
