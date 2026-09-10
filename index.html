@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Mon planning — UBS</title>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%231F7A6C' width='100' height='100'/><text x='50' y='65' font-size='70' font-weight='bold' text-anchor='middle' fill='white' font-family='serif'>P</text></svg>">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%231F7A6C' width='100' height='100'/><text x='50' y='65' font-size='60' font-weight='bold' fill='white' text-anchor='middle' dominant-baseline='middle'>P</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ical.js/1.5.0/ical.min.js"></script>
@@ -81,7 +81,7 @@
     font-size:0.85rem;
     cursor:pointer;
   }
-  button:hover{ opacity:0.9; }
+  button:hover{opacity:0.9;}
   button.secondary{
     background:var(--surface);
     color:var(--ink);
@@ -164,7 +164,7 @@
     margin-bottom:20px;
     min-height:1.2em;
   }
-  #status.error{ color:var(--today); }
+  #status.error{color:var(--today);}
   .day-block{
     display:grid;
     grid-template-columns:64px 1fr;
@@ -172,7 +172,7 @@
     padding:20px 0;
     border-top:1px solid var(--line);
   }
-  .day-block:last-child{ border-bottom:1px solid var(--line); }
+  .day-block:last-child{border-bottom:1px solid var(--line);}
   .day-label{
     text-align:center;
   }
@@ -189,8 +189,8 @@
     color:var(--ink-soft);
     margin-top:2px;
   }
-  .day-block.today .day-num{ color:var(--today); }
-  .day-block.today .day-name{ color:var(--today); }
+  .day-block.today .day-num{color:var(--today);}
+  .day-block.today .day-name{color:var(--today);}
   .events{
     display:flex;
     flex-direction:column;
@@ -324,7 +324,6 @@ function setStatus(msg, isError=false){
   statusEl.className = isError ? 'error' : '';
 }
 
-// Gestion des événements personnalisés
 function getCustomEvents(){
   const stored = localStorage.getItem('planning_customEvents');
   return stored ? JSON.parse(stored) : [];
@@ -337,14 +336,7 @@ function saveCustomEvents(events){
 function addCustomEvent(date, startTime, endTime, summary, location){
   const events = getCustomEvents();
   const id = Date.now().toString();
-  events.push({
-    id,
-    date,
-    startTime,
-    endTime,
-    summary,
-    location
-  });
+  events.push({id, date, startTime, endTime, summary, location});
   saveCustomEvents(events);
   return id;
 }
@@ -363,23 +355,15 @@ function customEventsToObjects(){
     const date = new Date(ev.date);
     const start = new Date(date.getFullYear(), date.getMonth(), date.getDate(), parseInt(hours), parseInt(mins));
     const end = new Date(date.getFullYear(), date.getMonth(), date.getDate(), parseInt(endHours), parseInt(endMins));
-    return {
-      start,
-      end,
-      summary: ev.summary,
-      location: ev.location,
-      custom: true,
-      id: ev.id
-    };
+    return {start, end, summary: ev.summary, location: ev.location, custom: true, id: ev.id};
   });
 }
 
-// Chaîne de repli : proxy personnel (si renseigné) → accès direct → proxys publics.
 function buildTargets(url, customProxyBase){
   const enc = encodeURIComponent(url);
   const targets = [];
   if(customProxyBase){
-    targets.push({ label: 'proxy personnel', target: customProxyBase + enc });
+    targets.push({label: 'proxy personnel', target: customProxyBase + enc});
   }
   return targets;
 }
@@ -388,17 +372,16 @@ async function fetchICS(url, customProxyBase, onAttempt){
   const targets = buildTargets(url, customProxyBase);
   let lastError = null;
 
-  for(const { label, target } of targets){
+  for(const {label, target} of targets){
     try{
       onAttempt(label);
-      const res = await fetch(target, { cache: 'no-store' });
+      const res = await fetch(target, {cache: 'no-store'});
       if(!res.ok) throw new Error('HTTP ' + res.status);
       const text = await res.text();
       if(!text.includes('BEGIN:VCALENDAR')) throw new Error('réponse inattendue (pas un ICS)');
       return text;
     } catch(err){
       lastError = err;
-      // on essaie la cible suivante
     }
   }
   throw lastError || new Error('toutes les tentatives ont échoué');
@@ -414,7 +397,6 @@ function expandEvents(icsText, rangeStart, rangeEnd){
     const event = new ICAL.Event(vevent);
     const summary = event.summary || 'Sans titre';
     const location = event.location || '';
-    const description = event.description || '';
 
     if(event.isRecurring()){
       const iterator = event.iterator();
@@ -427,14 +409,14 @@ function expandEvents(icsText, rangeStart, rangeEnd){
         results.push({
           start: details.startDate.toJSDate(),
           end: details.endDate.toJSDate(),
-          summary, location, description
+          summary, location
         });
       }
     } else {
       const occStart = event.startDate.toJSDate();
       const occEnd = event.endDate.toJSDate();
       if(occStart <= rangeEnd && occEnd >= rangeStart){
-        results.push({ start: occStart, end: occEnd, summary, location, description });
+        results.push({start: occStart, end: occEnd, summary, location});
       }
     }
   });
@@ -514,9 +496,8 @@ function render(events){
 async function load(){
   const url = urlInput.value.trim();
   const customProxyBase = document.getElementById('customProxy').value.trim();
-  if(!url){ setStatus('Colle une URL ICS ci-dessus.', true); return; }
+  if(!url){setStatus('Colle une URL ICS ci-dessus.', true); return;}
 
-  // Sauvegarde durable : reste après fermeture de l'onglet ou rechargement.
   localStorage.setItem('planning_icsUrl', url);
   localStorage.setItem('planning_customProxy', customProxyBase);
 
@@ -528,7 +509,6 @@ async function load(){
   try{
     icsText = await attempt();
   } catch(firstErr){
-    // Échec transitoire possible (401, proxy surchargé...) : on retente une fois après une courte pause.
     setStatus('Premier passage en échec, nouvelle tentative dans 2s…', true);
     await new Promise(r => setTimeout(r, 2000));
     try{
@@ -554,7 +534,6 @@ async function load(){
 async function loadWithCustom(){
   const url = urlInput.value.trim();
   if(!url){
-    // Afficher juste les événements personnalisés
     const now = new Date();
     const rangeStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const rangeEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 60);
@@ -598,15 +577,12 @@ document.getElementById('addEventForm').addEventListener('submit', (e) => {
 
   addCustomEvent(date, startTime, endTime, summary, location);
   
-  // Réinitialiser le formulaire
   document.getElementById('addEventForm').reset();
   
-  // Recharger l'affichage
   loadWithCustom();
   setStatus('Événement ajouté avec succès !');
 });
 
-// Restauration du lien enregistré (localStorage), puis chargement automatique si présent.
 const savedUrl = localStorage.getItem('planning_icsUrl');
 const savedProxy = localStorage.getItem('planning_customProxy');
 if(savedUrl){
@@ -614,7 +590,6 @@ if(savedUrl){
   if(savedProxy) document.getElementById('customProxy').value = savedProxy;
   load();
 } else {
-  // Afficher les événements personnalisés même sans URL
   loadWithCustom();
   setStatus('Colle ton lien ICS du planning UBS ci-dessus, puis clique sur "Charger". Il sera ensuite mémorisé automatiquement.');
 }
