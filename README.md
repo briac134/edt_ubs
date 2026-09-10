@@ -1,6 +1,6 @@
 # Mon Planning UBS
 
-Page web qui affiche l'emploi du temps Université Bretagne Sud à partir du lien d'export iCal généré par l'ENT. Le lien est enregistré dans le navigateur : une fois collé, il reste disponible au prochain rechargement.
+Page web qui affiche l'emploi du temps Université Bretagne Sud à partir du lien d'export iCal généré par l'ENT. Il permet également d'ajouter des évènements personnalisés. Le lien et les évènements sont enregistrés dans le navigateur : une fois ajoutés, ils restent disponibles au prochain rechargement.
 
 ## Récupérer le lien iCal depuis l'ENT
 
@@ -22,6 +22,8 @@ Ce lien est personnel : il donne accès en lecture à l'emploi du temps sans aut
 3. Cliquer sur **Charger**.
 
 Le lien est alors sauvegardé localement (`localStorage`) et sera réutilisé automatiquement aux prochaines ouvertures, même après fermeture de l'onglet. Le bouton **Oublier** permet de l'effacer.
+
+On peut également ajouter des évènements personnalisés en cliquant sur la section prévue à cet effet et rentrer les informations nécessaires.
 
 ## Remarque
 
