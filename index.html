@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Mon planning — UBS</title>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%231F7A6C' width='100' height='100'/><text x='50' y='65' font-size='70' font-weight='bold' text-anchor='middle' fill='white' font-family='serif'>P</text></svg>">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%231F7A6C' width='100' height='100'/><text x='50' y='65' font-s[...]
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ical.js/1.5.0/ical.min.js"></script>
@@ -59,7 +59,7 @@
     margin-bottom:24px;
     flex-wrap:wrap;
   }
-  input[type=text]{
+  input[type=text], input[type=date], input[type=time]{
     flex:1;
     min-width:220px;
     padding:10px 12px;
@@ -111,6 +111,53 @@
   #customProxy{
     width:100%;
   }
+  .add-event-form{
+    display:grid;
+    gap:12px;
+    margin-bottom:20px;
+  }
+  .form-row{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+  }
+  .form-row.full{
+    grid-template-columns:1fr;
+  }
+  .form-group{
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+  }
+  .form-group label{
+    font-size:0.8rem;
+    font-weight:500;
+    color:var(--ink-soft);
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+  }
+  .form-group input{
+    padding:10px 12px;
+    border:1px solid var(--line);
+    border-radius:6px;
+    font-family:'IBM Plex Sans', sans-serif;
+    font-size:0.85rem;
+    color:var(--ink);
+    background:var(--surface);
+  }
+  .form-actions{
+    display:flex;
+    gap:8px;
+    justify-content:flex-end;
+  }
+  button.delete-event{
+    background:#E8564A;
+    font-size:0.75rem;
+    padding:6px 10px;
+  }
+  button.delete-event:hover{
+    opacity:0.85;
+  }
   #status{
     color:var(--ink-soft);
     font-size:0.85rem;
@@ -154,6 +201,11 @@
     border-left:3px solid var(--accent);
     background:var(--accent-soft);
     border-radius:0 6px 6px 0;
+    position:relative;
+  }
+  .event.custom{
+    border-left-color:#7B61FF;
+    background:#F0EBFF;
   }
   .day-block.today .event{
     border-left-color:var(--today);
@@ -171,6 +223,25 @@
   .event-meta{
     font-size:0.8rem;
     color:var(--ink-soft);
+  }
+  .event-delete-btn{
+    position:absolute;
+    top:8px;
+    right:8px;
+    background:none;
+    border:none;
+    color:var(--ink-soft);
+    cursor:pointer;
+    font-size:1.2rem;
+    padding:0;
+    width:24px;
+    height:24px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .event-delete-btn:hover{
+    color:var(--today);
   }
   .empty, .loading{
     color:var(--ink-soft);
@@ -199,6 +270,43 @@
 
   <input type="hidden" id="customProxy">
 
+  <details>
+    <summary>➕ Ajouter un événement personnalisé</summary>
+    <div>
+      <form class="add-event-form" id="addEventForm">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="eventDate">Date *</label>
+            <input type="date" id="eventDate" required>
+          </div>
+          <div class="form-group">
+            <label for="eventName">Nom de l'événement *</label>
+            <input type="text" id="eventName" placeholder="Ex: Réunion projet" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="eventStart">Heure début *</label>
+            <input type="time" id="eventStart" required>
+          </div>
+          <div class="form-group">
+            <label for="eventEnd">Heure fin *</label>
+            <input type="time" id="eventEnd" required>
+          </div>
+        </div>
+        <div class="form-row full">
+          <div class="form-group">
+            <label for="eventLocation">Lieu</label>
+            <input type="text" id="eventLocation" placeholder="Ex: Amphi 101">
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="submit">Ajouter l'événement</button>
+        </div>
+      </form>
+    </div>
+  </details>
+
   <div id="status"></div>
   <div id="agenda"></div>
 </div>
@@ -214,6 +322,56 @@ const MONTH_NAMES = ['janv.','févr.','mars','avr.','mai','juin','juil.','août'
 function setStatus(msg, isError=false){
   statusEl.textContent = msg;
   statusEl.className = isError ? 'error' : '';
+}
+
+// Gestion des événements personnalisés
+function getCustomEvents(){
+  const stored = localStorage.getItem('planning_customEvents');
+  return stored ? JSON.parse(stored) : [];
+}
+
+function saveCustomEvents(events){
+  localStorage.setItem('planning_customEvents', JSON.stringify(events));
+}
+
+function addCustomEvent(date, startTime, endTime, summary, location){
+  const events = getCustomEvents();
+  const id = Date.now().toString();
+  events.push({
+    id,
+    date,
+    startTime,
+    endTime,
+    summary,
+    location
+  });
+  saveCustomEvents(events);
+  return id;
+}
+
+function deleteCustomEvent(id){
+  const events = getCustomEvents();
+  const filtered = events.filter(e => e.id !== id);
+  saveCustomEvents(filtered);
+}
+
+function customEventsToObjects(){
+  const customEvents = getCustomEvents();
+  return customEvents.map(ev => {
+    const [hours, mins] = ev.startTime.split(':');
+    const [endHours, endMins] = ev.endTime.split(':');
+    const date = new Date(ev.date);
+    const start = new Date(date.getFullYear(), date.getMonth(), date.getDate(), parseInt(hours), parseInt(mins));
+    const end = new Date(date.getFullYear(), date.getMonth(), date.getDate(), parseInt(endHours), parseInt(endMins));
+    return {
+      start,
+      end,
+      summary: ev.summary,
+      location: ev.location,
+      custom: true,
+      id: ev.id
+    };
+  });
 }
 
 // Chaîne de repli : proxy personnel (si renseigné) → accès direct → proxys publics.
@@ -327,12 +485,28 @@ function render(events){
     }
 
     const evEl = document.createElement('div');
-    evEl.className = 'event';
+    evEl.className = 'event' + (ev.custom ? ' custom' : '');
+    let deleteBtn = '';
+    if(ev.custom){
+      deleteBtn = `<button class="event-delete-btn" data-event-id="${ev.id}" title="Supprimer">×</button>`;
+    }
     evEl.innerHTML = `
       <div class="event-time">${formatTime(ev.start)} – ${formatTime(ev.end)}</div>
       <div class="event-title">${ev.summary}</div>
       ${ev.location ? `<div class="event-meta">${ev.location}</div>` : ''}
+      ${deleteBtn}
     `;
+    
+    if(ev.custom){
+      evEl.querySelector('.event-delete-btn').addEventListener('click', (e) => {
+        e.preventDefault();
+        if(confirm('Supprimer cet événement ?')){
+          deleteCustomEvent(ev.id);
+          loadWithCustom();
+        }
+      });
+    }
+    
     eventsWrap.appendChild(evEl);
   });
 }
@@ -369,9 +543,28 @@ async function load(){
   const now = new Date();
   const rangeStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const rangeEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 60);
-  const events = expandEvents(icsText, rangeStart, rangeEnd);
-  render(events);
-  setStatus(`${events.length} événement(s) affiché(s) (60 prochains jours).`);
+  const icsEvents = expandEvents(icsText, rangeStart, rangeEnd);
+  const customEvents = customEventsToObjects().filter(e => e.start <= rangeEnd && e.end >= rangeStart);
+  const allEvents = [...icsEvents, ...customEvents];
+  allEvents.sort((a,b) => a.start - b.start);
+  render(allEvents);
+  setStatus(`${icsEvents.length} événement(s) du planning + ${customEvents.length} événement(s) personnalisé(s) affiché(s) (60 prochains jours).`);
+}
+
+async function loadWithCustom(){
+  const url = urlInput.value.trim();
+  if(!url){
+    // Afficher juste les événements personnalisés
+    const now = new Date();
+    const rangeStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const rangeEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 60);
+    const customEvents = customEventsToObjects().filter(e => e.start <= rangeEnd && e.end >= rangeStart);
+    customEvents.sort((a,b) => a.start - b.start);
+    render(customEvents);
+    setStatus(`${customEvents.length} événement(s) personnalisé(s) affiché(s) (60 prochains jours).`);
+  } else {
+    load();
+  }
 }
 
 document.getElementById('loadBtn').addEventListener('click', load);
@@ -385,6 +578,34 @@ document.getElementById('clearBtn').addEventListener('click', () => {
   setStatus('Lien oublié. Colle un nouveau lien ICS pour recharger.');
 });
 
+document.getElementById('addEventForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const date = document.getElementById('eventDate').value;
+  const startTime = document.getElementById('eventStart').value;
+  const endTime = document.getElementById('eventEnd').value;
+  const summary = document.getElementById('eventName').value.trim();
+  const location = document.getElementById('eventLocation').value.trim();
+
+  if(!date || !startTime || !endTime || !summary){
+    alert('Veuillez remplir tous les champs requis (*).');
+    return;
+  }
+
+  if(startTime >= endTime){
+    alert('L\'heure de fin doit être après l\'heure de début.');
+    return;
+  }
+
+  addCustomEvent(date, startTime, endTime, summary, location);
+  
+  // Réinitialiser le formulaire
+  document.getElementById('addEventForm').reset();
+  
+  // Recharger l'affichage
+  loadWithCustom();
+  setStatus('Événement ajouté avec succès !');
+});
+
 // Restauration du lien enregistré (localStorage), puis chargement automatique si présent.
 const savedUrl = localStorage.getItem('planning_icsUrl');
 const savedProxy = localStorage.getItem('planning_customProxy');
@@ -393,6 +614,8 @@ if(savedUrl){
   if(savedProxy) document.getElementById('customProxy').value = savedProxy;
   load();
 } else {
+  // Afficher les événements personnalisés même sans URL
+  loadWithCustom();
   setStatus('Colle ton lien ICS du planning UBS ci-dessus, puis clique sur "Charger". Il sera ensuite mémorisé automatiquement.');
 }
 </script>
