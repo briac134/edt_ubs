@@ -476,7 +476,7 @@ function render(events){
       <div class="event-time">${formatTime(ev.start)} – ${formatTime(ev.end)}</div>
       <div class="event-title">${ev.summary}</div>
       ${ev.location ? `<div class="event-meta">${ev.location}</div>` : ''}
-      ${deleteBtn}
+      ${ev.description ? `<div class="event-meta">${ev.description}</div>` : ''}
     `;
     
     if(ev.custom){
