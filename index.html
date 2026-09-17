@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -223,6 +224,7 @@
   .event-meta{
     font-size:0.8rem;
     color:var(--ink-soft);
+    white-space:pre-line;
   }
   .event-delete-btn{
     position:absolute;
@@ -397,6 +399,7 @@ function expandEvents(icsText, rangeStart, rangeEnd){
     const event = new ICAL.Event(vevent);
     const summary = event.summary || 'Sans titre';
     const location = event.location || '';
+    const description = event.description || '';
 
     if(event.isRecurring()){
       const iterator = event.iterator();
@@ -409,14 +412,14 @@ function expandEvents(icsText, rangeStart, rangeEnd){
         results.push({
           start: details.startDate.toJSDate(),
           end: details.endDate.toJSDate(),
-          summary, location
+          summary, location, description
         });
       }
     } else {
       const occStart = event.startDate.toJSDate();
       const occEnd = event.endDate.toJSDate();
       if(occStart <= rangeEnd && occEnd >= rangeStart){
-        results.push({start: occStart, end: occEnd, summary, location});
+        results.push({start: occStart, end: occEnd, summary, location, description});
       }
     }
   });
@@ -473,12 +476,13 @@ function render(events){
       deleteBtn = `<button class="event-delete-btn" data-event-id="${ev.id}" title="Supprimer">×</button>`;
     }
     evEl.innerHTML = `
+      ${deleteBtn}
       <div class="event-time">${formatTime(ev.start)} – ${formatTime(ev.end)}</div>
       <div class="event-title">${ev.summary}</div>
       ${ev.location ? `<div class="event-meta">${ev.location}</div>` : ''}
       ${ev.description ? `<div class="event-meta">${ev.description}</div>` : ''}
     `;
-    
+
     if(ev.custom){
       evEl.querySelector('.event-delete-btn').addEventListener('click', (e) => {
         e.preventDefault();
@@ -488,7 +492,7 @@ function render(events){
         }
       });
     }
-    
+
     eventsWrap.appendChild(evEl);
   });
 }
@@ -576,9 +580,9 @@ document.getElementById('addEventForm').addEventListener('submit', (e) => {
   }
 
   addCustomEvent(date, startTime, endTime, summary, location);
-  
+
   document.getElementById('addEventForm').reset();
-  
+
   loadWithCustom();
   setStatus('Événement ajouté avec succès !');
 });
