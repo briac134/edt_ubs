@@ -1,35 +1,625 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Mon planning — UBS</title>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%231F7A6C' width='100' height='100'/><text x='50' y='65' font-size='55' text-anchor='middle' fill='white'>U</text></svg>">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%231F7A6C' width='100' height='100'/><text x='50' y='65' font-size='60' font-weight='bold' fill='white' text-anchor='middle' dominant-baseline='middle'>P</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ical.js/1.5.0/ical.min.js"></script>
 <style>
-:root{--bg:#EEF1F6;--surface:#FFF;--ink:#16233B;--ink-soft:#56607A;--line:#D8DEEA;--accent:#1F7A6C;--accent-soft:#E4F1EE;--today:#C65D2E;--today-soft:#FBEAE1}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:'IBM Plex Sans',sans-serif}.shell{max-width:760px;margin:auto;padding:40px 20px 80px}header{margin-bottom:28px}h1{font-family:Fraunces,serif;margin:0}.subtitle{color:var(--ink-soft);font-size:.9rem;margin-top:4px}.controls{display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap}input[type=text],input[type=date],input[type=time]{flex:1;min-width:220px;padding:10px 12px;border:1px solid var(--line);border-radius:6px;font:inherit;font-size:.85rem;color:var(--ink);background:var(--surface)}button{padding:10px 16px;border:0;border-radius:6px;background:var(--accent);color:#fff;font:500 .85rem inherit;cursor:pointer}button.secondary{background:var(--surface);color:var(--ink);border:1px solid var(--line)}details{margin-bottom:20px}details summary{cursor:pointer;color:var(--ink-soft);font-size:.85rem;padding:8px 0}details>div{margin-top:12px;padding:12px;background:var(--surface);border:1px solid var(--line);border-radius:6px}.theme-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.theme-field{display:flex;align-items:center;justify-content:space-between;color:var(--ink-soft);font-size:.85rem}.theme-field input[type=color]{width:42px;height:32px}.theme-field select,.form-group input{padding:8px;border:1px solid var(--line);border-radius:6px;color:var(--ink);background:var(--surface);font:inherit}.theme-actions,.form-actions{display:flex;justify-content:flex-end;margin-top:14px}.add-event-form{display:grid;gap:12px}.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}.form-row.full{grid-template-columns:1fr}.form-group{display:flex;flex-direction:column;gap:4px}.form-group label{font-size:.8rem;color:var(--ink-soft)}#status{color:var(--ink-soft);font-size:.85rem;margin-bottom:20px;min-height:1.2em}#status.error{color:var(--today)}.day-block{display:grid;grid-template-columns:64px 1fr;gap:16px;padding:20px 0;border-top:1px solid var(--line)}.day-block:last-child{border-bottom:1px solid var(--line)}.day-label{text-align:center}.day-num{font:600 1.9rem Fraunces,serif}.day-name{font-size:.7rem;text-transform:uppercase;color:var(--ink-soft)}.day-block.today .day-num,.day-block.today .day-name{color:var(--today)}.events{display:flex;flex-direction:column;gap:12px}.event{padding:10px 14px;border-left:3px solid var(--accent);background:var(--accent-soft);border-radius:0 6px 6px 0;position:relative}.event.custom{border-left-color:#7B61FF;background:#F0EBFF}.day-block.today .event{border-left-color:var(--today);background:var(--today-soft)}.event-time{font-size:.75rem;color:var(--ink-soft)}.event-title{font-weight:600;margin:2px 0}.event-meta{font-size:.8rem;color:var(--ink-soft);white-space:pre-line}.event-delete-btn{position:absolute;top:8px;right:8px;background:none;border:0;color:var(--ink-soft);font-size:1.2rem;padding:0}.empty,.loading{color:var(--ink-soft);padding:20px 0}@media(max-width:520px){.theme-grid,.form-row{grid-template-columns:1fr}}
+  :root{
+    --bg: #EEF1F6;
+    --surface: #FFFFFF;
+    --ink: #16233B;
+    --ink-soft: #56607A;
+    --line: #D8DEEA;
+    --accent: #1F7A6C;
+    --accent-soft: #E4F1EE;
+    --today: #C65D2E;
+    --today-soft: #FBEAE1;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'IBM Plex Sans', sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .shell{
+    max-width:760px;
+    margin:0 auto;
+    padding:40px 20px 80px;
+  }
+  header{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap:16px;
+    margin-bottom:28px;
+    flex-wrap:wrap;
+  }
+  h1{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:2rem;
+    margin:0;
+    letter-spacing:-0.01em;
+  }
+  .subtitle{
+    color:var(--ink-soft);
+    font-size:0.9rem;
+    margin-top:4px;
+  }
+  .controls{
+    display:flex;
+    gap:8px;
+    margin-bottom:24px;
+    flex-wrap:wrap;
+  }
+  input[type=text], input[type=date], input[type=time]{
+    flex:1;
+    min-width:220px;
+    padding:10px 12px;
+    border:1px solid var(--line);
+    border-radius:6px;
+    font-family:'IBM Plex Sans', sans-serif;
+    font-size:0.85rem;
+    color:var(--ink);
+    background:var(--surface);
+  }
+  button{
+    padding:10px 16px;
+    border:none;
+    border-radius:6px;
+    background:var(--accent);
+    color:#fff;
+    font-family:'IBM Plex Sans', sans-serif;
+    font-weight:500;
+    font-size:0.85rem;
+    cursor:pointer;
+  }
+  button:hover{opacity:0.9;}
+  button.secondary{
+    background:var(--surface);
+    color:var(--ink);
+    border:1px solid var(--line);
+  }
+  details{
+    margin-bottom:20px;
+  }
+  details summary{
+    cursor:pointer;
+    color:var(--ink-soft);
+    font-size:0.85rem;
+    font-weight:500;
+    padding:8px 0;
+    user-select:none;
+  }
+  details summary:hover{
+    color:var(--accent);
+  }
+  details > div{
+    margin-top:12px;
+    padding:12px;
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:6px;
+  }
+  #customProxy{
+    width:100%;
+  }
+  .add-event-form{
+    display:grid;
+    gap:12px;
+    margin-bottom:20px;
+  }
+  .form-row{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+  }
+  .form-row.full{
+    grid-template-columns:1fr;
+  }
+  .form-group{
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+  }
+  .form-group label{
+    font-size:0.8rem;
+    font-weight:500;
+    color:var(--ink-soft);
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+  }
+  .form-group input{
+    padding:10px 12px;
+    border:1px solid var(--line);
+    border-radius:6px;
+    font-family:'IBM Plex Sans', sans-serif;
+    font-size:0.85rem;
+    color:var(--ink);
+    background:var(--surface);
+  }
+  .form-actions{
+    display:flex;
+    gap:8px;
+    justify-content:flex-end;
+  }
+  button.delete-event{
+    background:#E8564A;
+    font-size:0.75rem;
+    padding:6px 10px;
+  }
+  button.delete-event:hover{
+    opacity:0.85;
+  }
+  #status{
+    color:var(--ink-soft);
+    font-size:0.85rem;
+    margin-bottom:20px;
+    min-height:1.2em;
+  }
+  #status.error{color:var(--today);}
+  .day-block{
+    display:grid;
+    grid-template-columns:64px 1fr;
+    gap:16px;
+    padding:20px 0;
+    border-top:1px solid var(--line);
+  }
+  .day-block:last-child{border-bottom:1px solid var(--line);}
+  .day-label{
+    text-align:center;
+  }
+  .day-num{
+    font-family:'Fraunces', serif;
+    font-size:1.9rem;
+    font-weight:600;
+    line-height:1;
+  }
+  .day-name{
+    font-size:0.7rem;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    color:var(--ink-soft);
+    margin-top:2px;
+  }
+  .day-block.today .day-num{color:var(--today);}
+  .day-block.today .day-name{color:var(--today);}
+  .events{
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+  }
+  .event{
+    padding:10px 14px;
+    border-left:3px solid var(--accent);
+    background:var(--accent-soft);
+    border-radius:0 6px 6px 0;
+    position:relative;
+  }
+  .event.custom{
+    border-left-color:#7B61FF;
+    background:#F0EBFF;
+  }
+  .day-block.today .event{
+    border-left-color:var(--today);
+    background:var(--today-soft);
+  }
+  .event-time{
+    font-size:0.75rem;
+    color:var(--ink-soft);
+    font-weight:500;
+  }
+  .event-title{
+    font-weight:600;
+    margin:2px 0;
+  }
+  .event-meta{
+    font-size:0.8rem;
+    color:var(--ink-soft);
+    white-space:pre-line;
+  }
+  .event-delete-btn{
+    position:absolute;
+    top:8px;
+    right:8px;
+    background:none;
+    border:none;
+    color:var(--ink-soft);
+    cursor:pointer;
+    font-size:1.2rem;
+    padding:0;
+    width:24px;
+    height:24px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .event-delete-btn:hover{
+    color:var(--today);
+  }
+  .empty, .loading{
+    color:var(--ink-soft);
+    font-size:0.9rem;
+    padding:20px 0;
+  }
 </style>
 </head>
-<body><div class="shell">
-<header><h1>Mon planning</h1><div class="subtitle">Université Bretagne Sud<br><strong>Comment utiliser: https://github.com/briac134/edt_ubs/</strong></div></header>
-<div class="controls"><input type="text" id="icsUrl" placeholder="Colle ici ton lien ICS du planning UBS (anonymous_cal.jsp?data=...)"><button id="loadBtn">Charger</button><button id="clearBtn" class="secondary" title="Oublier le lien enregistré">Oublier</button></div>
-<input type="hidden" id="customProxy">
-<details id="themeDetails"><summary>🎨 Personnaliser le thème et les couleurs</summary><div><div class="theme-grid"><label class="theme-field">Thème <select id="themePreset"><option value="light">Clair</option><option value="dark">Sombre</option></select></label><label class="theme-field">Police <select id="themeFont"><option value="sans">IBM Plex Sans</option><option value="serif">Fraunces</option><option value="system">Système</option></select></label><label class="theme-field">Arrière-plan <input type="color" id="colorBg"></label><label class="theme-field">Surface <input type="color" id="colorSurface"></label><label class="theme-field">Texte <input type="color" id="colorInk"></label><label class="theme-field">Accent <input type="color" id="colorAccent"></label><label class="theme-field">Aujourd'hui <input type="color" id="colorToday"></label></div><div class="theme-actions"><button type="button" class="secondary" id="resetThemeBtn">Réinitialiser</button></div></div></details>
-<details><summary>➕ Ajouter un événement personnalisé</summary><div><form class="add-event-form" id="addEventForm"><div class="form-row"><div class="form-group"><label for="eventDate">Date *</label><input type="date" id="eventDate" required></div><div class="form-group"><label for="eventName">Nom de l'événement *</label><input type="text" id="eventName" required></div></div><div class="form-row"><div class="form-group"><label for="eventStart">Heure début *</label><input type="time" id="eventStart" required></div><div class="form-group"><label for="eventEnd">Heure fin *</label><input type="time" id="eventEnd" required></div></div><div class="form-row full"><div class="form-group"><label for="eventLocation">Lieu</label><input type="text" id="eventLocation"></div></div><div class="form-actions"><button type="submit">Ajouter l'événement</button></div></form></div></details>
-<div id="status"></div><div id="agenda"></div></div>
+<body>
+<div class="shell">
+  <header>
+    <div>
+      <h1>Mon planning</h1>
+      <div class="subtitle">
+        Université Bretagne Sud<br>
+        <strong>Comment utiliser: https://github.com/briac134/edt_ubs/</strong><br>
+      </div>
+    </div>
+  </header>
+
+  <div class="controls">
+    <input type="text" id="icsUrl" placeholder="Colle ici ton lien ICS du planning UBS (anonymous_cal.jsp?data=...)">
+    <button id="loadBtn">Charger</button>
+    <button id="clearBtn" class="secondary" title="Oublier le lien enregistré">Oublier</button>
+  </div>
+
+  <input type="hidden" id="customProxy">
+
+  <details>
+    <summary>➕ Ajouter un événement personnalisé</summary>
+    <div>
+      <form class="add-event-form" id="addEventForm">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="eventDate">Date *</label>
+            <input type="date" id="eventDate" required>
+          </div>
+          <div class="form-group">
+            <label for="eventName">Nom de l'événement *</label>
+            <input type="text" id="eventName" placeholder="Ex: Réunion projet" required>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="eventStart">Heure début *</label>
+            <input type="time" id="eventStart" required>
+          </div>
+          <div class="form-group">
+            <label for="eventEnd">Heure fin *</label>
+            <input type="time" id="eventEnd" required>
+          </div>
+        </div>
+        <div class="form-row full">
+          <div class="form-group">
+            <label for="eventLocation">Lieu</label>
+            <input type="text" id="eventLocation" placeholder="Ex: Amphi 101">
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="submit">Ajouter l'événement</button>
+        </div>
+      </form>
+    </div>
+  </details>
+
+  <div id="status"></div>
+  <div id="agenda"></div>
+</div>
+
 <script>
-const statusEl=document.getElementById('status'),agendaEl=document.getElementById('agenda'),urlInput=document.getElementById('icsUrl');
-const DEFAULT_THEME={bg:'#EEF1F6',surface:'#FFFFFF',ink:'#16233B',inkSoft:'#56607A',line:'#D8DEEA',accent:'#1F7A6C',accentSoft:'#E4F1EE',today:'#C65D2E',todaySoft:'#FBEAE1',font:'sans'};
-const DARK_THEME={...DEFAULT_THEME,bg:'#18202B',surface:'#253142',ink:'#F1F5F9',inkSoft:'#AAB7C8',line:'#3C4B5F',accent:'#54B9A6',accentSoft:'#23483F',today:'#F08A5D',todaySoft:'#4B302A'};
-function setStatus(msg,error=false){statusEl.textContent=msg;statusEl.className=error?'error':''}function applyTheme(t,save=true){const r=document.documentElement;Object.entries(t).forEach(([k,v])=>{if(k!=='font')r.style.setProperty('--'+k.replace(/[A-Z]/g,m=>'-'+m.toLowerCase()),v)});document.body.style.fontFamily=t.font==='serif'?'Fraunces,serif':t.font==='system'?'system-ui,sans-serif':'IBM Plex Sans,sans-serif';if(save)localStorage.setItem('planning_theme',JSON.stringify(t));document.getElementById('colorBg').value=t.bg;document.getElementById('colorSurface').value=t.surface;document.getElementById('colorInk').value=t.ink;document.getElementById('colorAccent').value=t.accent;document.getElementById('colorToday').value=t.today;document.getElementById('themeFont').value=t.font}
-const storedTheme=localStorage.getItem('planning_theme');applyTheme(storedTheme?{...DEFAULT_THEME,...JSON.parse(storedTheme)}:DEFAULT_THEME,false);document.getElementById('themePreset').addEventListener('change',e=>applyTheme(e.target.value==='dark'?DARK_THEME:DEFAULT_THEME));document.getElementById('resetThemeBtn').addEventListener('click',()=>{localStorage.removeItem('planning_theme');applyTheme(DEFAULT_THEME)});document.querySelectorAll('#themeDetails input[type=color],#themeFont').forEach(e=>e.addEventListener('input',()=>{const t={...DEFAULT_THEME,bg:colorBg.value,surface:colorSurface.value,ink:colorInk.value,accent:colorAccent.value,today:colorToday.value,font:themeFont.value};applyTheme(t)}));
-function getCustomEvents(){return JSON.parse(localStorage.getItem('planning_customEvents')||'[]')}function saveCustomEvents(e){localStorage.setItem('planning_customEvents',JSON.stringify(e))}function customEventsToObjects(){return getCustomEvents().map(e=>{const d=new Date(e.date),[h,m]=e.startTime.split(':'),[eh,em]=e.endTime.split(':');return{start:new Date(d.getFullYear(),d.getMonth(),d.getDate(),h,m),end:new Date(d.getFullYear(),d.getMonth(),d.getDate(),eh,em),summary:e.summary,location:e.location,custom:true,id:e.id}})}
-function buildTargets(url,proxy){const targets=[{label:'URL directe',target:url}];if(proxy)targets.push({label:'proxy personnel',target:proxy+encodeURIComponent(url)});return targets}async function fetchICS(url,proxy,onAttempt){let lastError=null;for(const{label,target}of buildTargets(url,proxy)){try{onAttempt(label);const r=await fetch(target,{cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);const text=await r.text();if(!text.includes('BEGIN:VCALENDAR'))throw Error('Réponse ICS invalide');return text}catch(e){lastError=e}}throw lastError||Error('Échec du chargement')}
-function expandEvents(text,start,end){const c=new ICAL.Component(ICAL.parse(text)),out=[];c.getAllSubcomponents('vevent').forEach(v=>{const e=new ICAL.Event(v),s=e.startDate.toJSDate(),en=e.endDate.toJSDate();if(s<=end&&en>=start)out.push({start:s,end:en,summary:e.summary||'Sans titre',location:e.location||'',description:e.description||''})});return out.sort((a,b)=>a.start-b.start)}function render(events){agendaEl.innerHTML='';if(!events.length){agendaEl.innerHTML='<div class="empty">Aucun événement dans la période affichée.</div>';return}let day=null,wrap;const today=new Date();events.forEach(e=>{const d=e.start;if(!day||day.toDateString()!==d.toDateString()){day=d;const block=document.createElement('div');block.className='day-block'+(day.toDateString()===today.toDateString()?' today':'');block.innerHTML='<div class="day-label"><div class="day-num">'+d.getDate()+'</div><div class="day-name">'+d.toLocaleDateString('fr-FR',{weekday:'short',month:'short'})+'</div></div><div class="events"></div>';agendaEl.appendChild(block);wrap=block.querySelector('.events')}const el=document.createElement('div');el.className='event'+(e.custom?' custom':'');el.innerHTML='<div class="event-time">'+e.start.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})+' – '+e.end.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})+'</div><div class="event-title"></div>'+(e.location?'<div class="event-meta"></div>':'');el.querySelector('.event-title').textContent=e.summary;if(e.location)el.querySelector('.event-meta').textContent=e.location;wrap.appendChild(el)})}
-async function load(){const url=urlInput.value.trim(),proxy=document.getElementById('customProxy').value.trim();if(!url){setStatus('Colle une URL ICS ci-dessus.',true);return}localStorage.setItem('planning_icsUrl',url);if(proxy)localStorage.setItem('planning_customProxy',proxy);try{const text=await fetchICS(url,proxy,l=>setStatus('Tentative : '+l));const n=new Date(),start=new Date(n.getFullYear(),n.getMonth(),n.getDate()),end=new Date(n.getFullYear(),n.getMonth(),n.getDate()+60),events=[...expandEvents(text,start,end),...customEventsToObjects()].filter(e=>e.start<=end&&e.end>=start).sort((a,b)=>a.start-b.start);render(events);setStatus(events.length+' événement(s) affiché(s).')}catch(e){setStatus('Erreur de chargement : '+e.message,true)}}
-function loadCustom(){const n=new Date(),start=new Date(n.getFullYear(),n.getMonth(),n.getDate()),end=new Date(n.getFullYear(),n.getMonth(),n.getDate()+60);render(customEventsToObjects().filter(e=>e.start<=end&&e.end>=start));}
-document.getElementById('loadBtn').addEventListener('click',load);document.getElementById('clearBtn').addEventListener('click',()=>{localStorage.removeItem('planning_icsUrl');urlInput.value='';agendaEl.innerHTML='';setStatus('Lien oublié. Colle un nouveau lien ICS pour recharger.')});document.getElementById('addEventForm').addEventListener('submit',e=>{e.preventDefault();const date=eventDate.value,startTime=eventStart.value,endTime=eventEnd.value,summary=eventName.value.trim(),location=eventLocation.value.trim();const events=getCustomEvents();events.push({id:Date.now().toString(),date,startTime,endTime,summary,location});saveCustomEvents(events);e.target.reset();load()});
-const savedUrl=localStorage.getItem('planning_icsUrl'),savedProxy=localStorage.getItem('planning_customProxy');if(savedProxy)document.getElementById('customProxy').value=savedProxy;if(savedUrl){urlInput.value=savedUrl;load()}else{loadCustom();setStatus('Colle ton lien ICS du planning UBS ci-dessus.')}
-</script></body></html>
+const statusEl = document.getElementById('status');
+const agendaEl = document.getElementById('agenda');
+const urlInput = document.getElementById('icsUrl');
+
+const DAY_NAMES = ['dim','lun','mar','mer','jeu','ven','sam'];
+const MONTH_NAMES = ['janv.','févr.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'];
+
+function setStatus(msg, isError=false){
+  statusEl.textContent = msg;
+  statusEl.className = isError ? 'error' : '';
+}
+
+function getCustomEvents(){
+  const stored = localStorage.getItem('planning_customEvents');
+  return stored ? JSON.parse(stored) : [];
+}
+
+function saveCustomEvents(events){
+  localStorage.setItem('planning_customEvents', JSON.stringify(events));
+}
+
+function addCustomEvent(date, startTime, endTime, summary, location){
+  const events = getCustomEvents();
+  const id = Date.now().toString();
+  events.push({id, date, startTime, endTime, summary, location});
+  saveCustomEvents(events);
+  return id;
+}
+
+function deleteCustomEvent(id){
+  const events = getCustomEvents();
+  const filtered = events.filter(e => e.id !== id);
+  saveCustomEvents(filtered);
+}
+
+function customEventsToObjects(){
+  const customEvents = getCustomEvents();
+  return customEvents.map(ev => {
+    const [hours, mins] = ev.startTime.split(':');
+    const [endHours, endMins] = ev.endTime.split(':');
+    const date = new Date(ev.date);
+    const start = new Date(date.getFullYear(), date.getMonth(), date.getDate(), parseInt(hours), parseInt(mins));
+    const end = new Date(date.getFullYear(), date.getMonth(), date.getDate(), parseInt(endHours), parseInt(endMins));
+    return {start, end, summary: ev.summary, location: ev.location, custom: true, id: ev.id};
+  });
+}
+
+function buildTargets(url, customProxyBase){
+  const enc = encodeURIComponent(url);
+  const targets = [];
+  if(customProxyBase){
+    targets.push({label: 'proxy personnel', target: customProxyBase + enc});
+  }
+  return targets;
+}
+
+async function fetchICS(url, customProxyBase, onAttempt){
+  const targets = buildTargets(url, customProxyBase);
+  let lastError = null;
+
+  for(const {label, target} of targets){
+    try{
+      onAttempt(label);
+      const res = await fetch(target, {cache: 'no-store'});
+      if(!res.ok) throw new Error('HTTP ' + res.status);
+      const text = await res.text();
+      if(!text.includes('BEGIN:VCALENDAR')) throw new Error('réponse inattendue (pas un ICS)');
+      return text;
+    } catch(err){
+      lastError = err;
+    }
+  }
+  throw lastError || new Error('toutes les tentatives ont échoué');
+}
+
+function expandEvents(icsText, rangeStart, rangeEnd){
+  const jcalData = ICAL.parse(icsText);
+  const comp = new ICAL.Component(jcalData);
+  const vevents = comp.getAllSubcomponents('vevent');
+  const results = [];
+
+  vevents.forEach(vevent => {
+    const event = new ICAL.Event(vevent);
+    const summary = event.summary || 'Sans titre';
+    const location = event.location || '';
+    const description = event.description || '';
+
+    if(event.isRecurring()){
+      const iterator = event.iterator();
+      let next;
+      while((next = iterator.next())){
+        const occStart = next.toJSDate();
+        if(occStart > rangeEnd) break;
+        if(occStart < rangeStart) continue;
+        const details = event.getOccurrenceDetails(next);
+        results.push({
+          start: details.startDate.toJSDate(),
+          end: details.endDate.toJSDate(),
+          summary, location, description
+        });
+      }
+    } else {
+      const occStart = event.startDate.toJSDate();
+      const occEnd = event.endDate.toJSDate();
+      if(occStart <= rangeEnd && occEnd >= rangeStart){
+        results.push({start: occStart, end: occEnd, summary, location, description});
+      }
+    }
+  });
+
+  results.sort((a,b) => a.start - b.start);
+  return results;
+}
+
+function sameDay(a,b){
+  return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate();
+}
+
+function formatTime(d){
+  return d.toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'});
+}
+
+// Le champ DESCRIPTION des ICS ADE/Hyperplanning contient souvent, en vrac :
+// le titre dupliqué, des codes de groupe, le(s) nom(s) de prof, et une ligne d'export.
+// On isole les noms de prof (motif "Nom I.") et on nettoie le reste.
+const TEACHER_LINE = /^[A-ZÀ-ÖØ-Ý][\wÀ-ÖØ-öø-ÿ'’-]*(?:\s[A-ZÀ-ÖØ-Ý][\wÀ-ÖØ-öø-ÿ'’-]*)*\s[A-ZÀ-ÖØ-Ý]\.$/;
+
+function parseDescription(description, summary){
+  if(!description) return { teachers: [], extra: [] };
+  const lines = description.split('\n').map(l => l.trim()).filter(Boolean);
+  const teachers = [];
+  const extra = [];
+  lines.forEach(line => {
+    if(/^\(Exported/i.test(line)) return;
+    if(line === summary) return;
+    if(TEACHER_LINE.test(line)){
+      teachers.push(line);
+    } else {
+      extra.push(line);
+    }
+  });
+  return { teachers, extra };
+}
+
+function render(events){
+  agendaEl.innerHTML = '';
+  if(events.length === 0){
+    agendaEl.innerHTML = '<div class="empty">Aucun événement dans la période affichée.</div>';
+    return;
+  }
+
+  const today = new Date();
+  let currentDay = null;
+  let dayBlock = null;
+  let eventsWrap = null;
+
+  events.forEach(ev => {
+    if(!currentDay || !sameDay(currentDay, ev.start)){
+      currentDay = ev.start;
+      dayBlock = document.createElement('div');
+      dayBlock.className = 'day-block' + (sameDay(currentDay, today) ? ' today' : '');
+
+      const label = document.createElement('div');
+      label.className = 'day-label';
+      label.innerHTML = `
+        <div class="day-num">${currentDay.getDate()}</div>
+        <div class="day-name">${DAY_NAMES[currentDay.getDay()]} ${MONTH_NAMES[currentDay.getMonth()]}</div>
+      `;
+
+      eventsWrap = document.createElement('div');
+      eventsWrap.className = 'events';
+
+      dayBlock.appendChild(label);
+      dayBlock.appendChild(eventsWrap);
+      agendaEl.appendChild(dayBlock);
+    }
+
+    const evEl = document.createElement('div');
+    evEl.className = 'event' + (ev.custom ? ' custom' : '');
+    let deleteBtn = '';
+    if(ev.custom){
+      deleteBtn = `<button class="event-delete-btn" data-event-id="${ev.id}" title="Supprimer">×</button>`;
+    }
+    const { teachers, extra } = parseDescription(ev.description, ev.summary);
+    evEl.innerHTML = `
+      ${deleteBtn}
+      <div class="event-time">${formatTime(ev.start)} – ${formatTime(ev.end)}</div>
+      <div class="event-title">${ev.summary}</div>
+      ${ev.location ? `<div class="event-meta">${ev.location}</div>` : ''}
+      ${teachers.length ? `<div class="event-meta"><strong>${teachers.join(', ')}</strong></div>` : ''}
+    `;
+
+    if(ev.custom){
+      evEl.querySelector('.event-delete-btn').addEventListener('click', (e) => {
+        e.preventDefault();
+        if(confirm('Supprimer cet événement ?')){
+          deleteCustomEvent(ev.id);
+          loadWithCustom();
+        }
+      });
+    }
+
+    eventsWrap.appendChild(evEl);
+  });
+}
+
+async function load(){
+  const url = urlInput.value.trim();
+  const customProxyBase = document.getElementById('customProxy').value.trim();
+  if(!url){setStatus('Colle une URL ICS ci-dessus.', true); return;}
+
+  localStorage.setItem('planning_icsUrl', url);
+  localStorage.setItem('planning_customProxy', customProxyBase);
+
+  agendaEl.innerHTML = '<div class="loading">Chargement du planning…</div>';
+
+  const attempt = async () => fetchICS(url, customProxyBase, (label) => setStatus('Tentative : ' + label + '…'));
+
+  let icsText;
+  try{
+    icsText = await attempt();
+  } catch(firstErr){
+    setStatus('Premier passage en échec, nouvelle tentative dans 2s…', true);
+    await new Promise(r => setTimeout(r, 2000));
+    try{
+      icsText = await attempt();
+    } catch(secondErr){
+      agendaEl.innerHTML = '';
+      setStatus('Échec de toutes les tentatives (' + secondErr.message + '). Configure un proxy personnel ci-dessus pour un accès fiable, ou clique sur "Charger" pour réessayer.', true);
+      return;
+    }
+  }
+
+  const now = new Date();
+  const rangeStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const rangeEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 60);
+  const icsEvents = expandEvents(icsText, rangeStart, rangeEnd);
+  const customEvents = customEventsToObjects().filter(e => e.start <= rangeEnd && e.end >= rangeStart);
+  const allEvents = [...icsEvents, ...customEvents];
+  allEvents.sort((a,b) => a.start - b.start);
+  render(allEvents);
+  setStatus(`${icsEvents.length} événement(s) du planning + ${customEvents.length} événement(s) personnalisé(s) affiché(s) (60 prochains jours).`);
+}
+
+async function loadWithCustom(){
+  const url = urlInput.value.trim();
+  if(!url){
+    const now = new Date();
+    const rangeStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const rangeEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 60);
+    const customEvents = customEventsToObjects().filter(e => e.start <= rangeEnd && e.end >= rangeStart);
+    customEvents.sort((a,b) => a.start - b.start);
+    render(customEvents);
+    setStatus(`${customEvents.length} événement(s) personnalisé(s) affiché(s) (60 prochains jours).`);
+  } else {
+    load();
+  }
+}
+
+document.getElementById('loadBtn').addEventListener('click', load);
+
+document.getElementById('clearBtn').addEventListener('click', () => {
+  localStorage.removeItem('planning_icsUrl');
+  localStorage.removeItem('planning_customProxy');
+  urlInput.value = '';
+  document.getElementById('customProxy').value = '';
+  agendaEl.innerHTML = '';
+  setStatus('Lien oublié. Colle un nouveau lien ICS pour recharger.');
+});
+
+document.getElementById('addEventForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const date = document.getElementById('eventDate').value;
+  const startTime = document.getElementById('eventStart').value;
+  const endTime = document.getElementById('eventEnd').value;
+  const summary = document.getElementById('eventName').value.trim();
+  const location = document.getElementById('eventLocation').value.trim();
+
+  if(!date || !startTime || !endTime || !summary){
+    alert('Veuillez remplir tous les champs requis (*).');
+    return;
+  }
+
+  if(startTime >= endTime){
+    alert('L\'heure de fin doit être après l\'heure de début.');
+    return;
+  }
+
+  addCustomEvent(date, startTime, endTime, summary, location);
+
+  document.getElementById('addEventForm').reset();
+
+  loadWithCustom();
+  setStatus('Événement ajouté avec succès !');
+});
+
+const savedUrl = localStorage.getItem('planning_icsUrl');
+const savedProxy = localStorage.getItem('planning_customProxy');
+if(savedUrl){
+  urlInput.value = savedUrl;
+  if(savedProxy) document.getElementById('customProxy').value = savedProxy;
+  load();
+} else {
+  loadWithCustom();
+  setStatus('Colle ton lien ICS du planning UBS ci-dessus, puis clique sur "Charger". Il sera ensuite mémorisé automatiquement.');
+}
+</script>
+</body>
+</html>
