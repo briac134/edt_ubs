@@ -436,6 +436,28 @@ function formatTime(d){
   return d.toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'});
 }
 
+// Le champ DESCRIPTION des ICS ADE/Hyperplanning contient souvent, en vrac :
+// le titre dupliqué, des codes de groupe, le(s) nom(s) de prof, et une ligne d'export.
+// On isole les noms de prof (motif "Nom I.") et on nettoie le reste.
+const TEACHER_LINE = /^[A-ZÀ-ÖØ-Ý][\wÀ-ÖØ-öø-ÿ'’-]*(?:\s[A-ZÀ-ÖØ-Ý][\wÀ-ÖØ-öø-ÿ'’-]*)*\s[A-ZÀ-ÖØ-Ý]\.$/;
+
+function parseDescription(description, summary){
+  if(!description) return { teachers: [], extra: [] };
+  const lines = description.split('\n').map(l => l.trim()).filter(Boolean);
+  const teachers = [];
+  const extra = [];
+  lines.forEach(line => {
+    if(/^\(Exported/i.test(line)) return;
+    if(line === summary) return;
+    if(TEACHER_LINE.test(line)){
+      teachers.push(line);
+    } else {
+      extra.push(line);
+    }
+  });
+  return { teachers, extra };
+}
+
 function render(events){
   agendaEl.innerHTML = '';
   if(events.length === 0){
@@ -475,12 +497,13 @@ function render(events){
     if(ev.custom){
       deleteBtn = `<button class="event-delete-btn" data-event-id="${ev.id}" title="Supprimer">×</button>`;
     }
+    const { teachers, extra } = parseDescription(ev.description, ev.summary);
     evEl.innerHTML = `
       ${deleteBtn}
       <div class="event-time">${formatTime(ev.start)} – ${formatTime(ev.end)}</div>
       <div class="event-title">${ev.summary}</div>
       ${ev.location ? `<div class="event-meta">${ev.location}</div>` : ''}
-      ${ev.description ? `<div class="event-meta">${ev.description}</div>` : ''}
+      ${teachers.length ? `<div class="event-meta"><strong>${teachers.join(', ')}</strong></div>` : ''}
     `;
 
     if(ev.custom){
