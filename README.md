@@ -47,8 +47,9 @@ export default {
   },
 };
 ```
-Deploy, on obtien une URL du type https://ton-worker.ton-compte.workers.dev
-Dans le champ "Proxy personnel" de la page, mettre : https://ton-worker.ton-compte.workers.dev/
+Deploy, on obtient une URL du type https://ton-worker.ton-compte.workers.dev/
+
+Dans le champ "Proxy personnel" de la page, mettre ce lien.
 
 ## Crédits
 
