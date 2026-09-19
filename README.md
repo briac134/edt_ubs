@@ -25,9 +25,30 @@ Le lien est alors sauvegardé localement (`localStorage`) et sera réutilisé au
 
 On peut également ajouter des évènements personnalisés en cliquant sur la section prévue à cet effet et rentrer les informations nécessaires.
 
-## Remarque
+## Proxy
 
-Le lien iCal peut être régénéré côté ENT si besoin (nouvel export). Dans ce cas, il suffit de coller le nouveau lien dans la page pour remplacer l'ancien.
+Aller sur dash.cloudflare.com → Workers & Pages → Create Worker
+Remplacer le code par :
+```
+export default {
+  async fetch(request) {
+    const { searchParams } = new URL(request.url);
+    const target = searchParams.get('url');
+    if (!target) return new Response('Missing url param', { status: 400 });
+    const res = await fetch(target, { headers: { 'User-Agent': 'Mozilla/5.0' } });
+    const body = await res.text();
+    return new Response(body, {
+      status: res.status,
+      headers: {
+        'Content-Type': 'text/calendar; charset=utf-8',
+        'Access-Control-Allow-Origin': '*',
+      },
+    });
+  },
+};
+```
+Deploy, on obtien une URL du type https://ton-worker.ton-compte.workers.dev
+Dans le champ "Proxy personnel" de la page, mettre : https://ton-worker.ton-compte.workers.dev/
 
 ## Crédits
 
