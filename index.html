@@ -21,9 +21,9 @@
 <button id="loadBtn" type="button">Charger</button><button id="clearBtn" class="secondary" type="button">Oublier</button>
 </div>
 <div class="controls">
-<input type="url" id="customProxy" placeholder="Proxy facultatif — ex. https://mon-proxy.example/?url=" autocomplete="off">
+<input type="url" id="customProxy" placeholder="Proxy (nécessaire) — ex. https://mon-proxy.example/?url=" autocomplete="off">
 </div>
-<p class="proxy-help">Le chargement direct nécessite CORS. Si UBS le bloque, indiquez un proxy qui accepte <code>?url=URL_ENCODEE</code> et renvoie le calendrier ICS avec CORS.</p>
+<p class="proxy-help">Le chargement direct nécessite un proxy. Récupérer un lien sur Cloudflare</p>
 <details><summary>➕ Ajouter un événement personnalisé</summary><div><form class="add-event-form" id="addEventForm">
 <div class="form-row"><div class="form-group"><label for="eventDate">Date *</label><input type="date" id="eventDate" required></div><div class="form-group"><label for="eventName">Nom de l'événement *</label><input type="text" id="eventName" placeholder="Ex: Réunion projet" required></div></div>
 <div class="form-row"><div class="form-group"><label for="eventStart">Heure début *</label><input type="time" id="eventStart" required></div><div class="form-group"><label for="eventEnd">Heure fin *</label><input type="time" id="eventEnd" required></div></div>
