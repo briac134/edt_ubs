@@ -1,3 +1,5 @@
+# Généré par IA. N'a pour but qu'un objectif fonctionnel.
+
 # Mon Planning UBS
 
 Page web qui affiche l'emploi du temps Université Bretagne Sud à partir du lien d'export iCal généré par l'ENT. Il permet également d'ajouter des évènements personnalisés. Le lien et les évènements sont enregistrés dans le navigateur : une fois ajoutés, ils restent disponibles au prochain rechargement.
